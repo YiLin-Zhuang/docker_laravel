@@ -1,0 +1,53 @@
+version: '3'
+
+services:
+  app:
+    container_name: ${PROJECT_NAME}_API_LARAVEL
+    build:
+      context: .
+    ports:
+      - "8000:8000"
+    restart: always
+    volumes:
+      - ./src:/var/www/html
+    env_file: .env
+    environment:
+        DB_HOST: db
+        DB_PORT: 3306
+        DB_DATABASE: ${MYSQL_DATABASE}
+        DB_USERNAME: ${MYSQL_USER}
+        DB_PASSWORD: ${MYSQL_PASSWORD}
+        DB_CONNECTION: mysql
+    depends_on:
+      - db
+    networks:
+      - api-network
+  db:
+    container_name: ${PROJECT_NAME}_API_DB
+    image: mysql:8.0
+    env_file: .env
+    environment:
+        MYSQL_RANDOM_ROOT_PASSWORD: '1'
+    networks:
+      - api-network
+    volumes:
+      - my-db:/var/lib/mysql
+  phpmyadmin:
+    container_name: ${PROJECT_NAME}_API_PHPMYADMIN
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      MYSQL_USERNAME: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      PMA_ARBITRARY: 0
+      PMA_HOST: db
+    networks:
+      - api-network
+networks:
+  api-network:
+    name: ${PROJECT_NAME}_API_NETWORK
+    driver: bridge
+volumes:
+  my-db:
